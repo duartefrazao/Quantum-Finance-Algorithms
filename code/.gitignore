@@ -3,3 +3,11 @@ data/__pycache__*
 plot/__pycache__*
 __pycache__/*
 __init__.py
+plot/file.txt
+plot/general.ipynb
+plot/test_penny.py
+test/analysis_qaoa.ipynb
+test/gate_costs.txt
+test/memory_cost.txt
+test/qaoa_single.txt
+test/test.ipynb
