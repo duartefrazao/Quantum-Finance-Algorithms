@@ -9,10 +9,15 @@ def get_result_basic(result,risk_aversion):
 def calculate_terms(result,mu,sigma,num_assets_chosen):
     
     result_div = result/np.array(num_assets_chosen)
-    risk =  252*(100*np.dot(result.T,np.dot(sigma,result))/2)**(1/2)  
-    returns = 100*252*np.dot(mu.T,result) 
-    #risk = np.dot(result.T,np.dot(sigma,result))/num_assets_chosen
-    #returns = np.dot(mu.T,result) / num_assets_chosen
+    """ risk =  252*(100*np.dot(result.T,np.dot(sigma,result))/2)**(1/2)  
+    returns = 100*252*np.dot(mu.T,result)  """
+    #risk =  2.52*(100*np.dot(result.T,np.dot(sigma,result))/(2*252*num_assets_chosen))**(1/2)  
+    #risk = 100*np.dot(result.T,np.dot(sigma,result))/(num_assets_chosen)
+    #risk =  252*(100*np.dot(result.T,np.dot(sigma,result))/(2*252*num_assets_chosen))**(1/2)  
+    risk =  (100*np.dot(result.T,np.dot(sigma,result))/(num_assets_chosen))  
+    returns = 100*np.dot(mu.T,result)/num_assets_chosen 
+    """ risk = np.dot(result.T,np.dot(sigma,result))/num_assets_chosen
+    returns = np.dot(mu.T,result) / num_assets_chosen """
     """ risk =  np.matmul(result.T,np.dot(sigma,result))
     returns =  np.dot(mu.T,result) """
     """ result = trim_solution(result)
@@ -77,13 +82,16 @@ def logger(stocks,mu,sigma,risk_aversion,solution,name,num_assets_portfolio,crea
     
     f.write("\nMu: ")
     for ret in mu:
-        f.write(" " +trunc(252*ret))
+        #f.write(" " +trunc(252*ret))
+        f.write(" " +trunc(ret,6))
     
     f.write("\nSigma: ")
     for line in sigma:
         f.write("\n")
         for e in line:
-            f.write(" " + str(2.52*((100*e/2)**(1/2)))[:4])
+            #f.write(" " + str(2.52*((100*e/2)**(1/2)))[:4])
+            f.write(" " + str(e**(1/2))[:4])
+            #f.write(" " + str(2.50*((100*e/(2*2.5))**(1/2)))[:4])
     
     f.write("\nRisk aversion: ")
     f.write(str(risk_aversion))

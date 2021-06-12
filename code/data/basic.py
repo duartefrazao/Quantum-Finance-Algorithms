@@ -26,10 +26,11 @@ def get_data_pd(tickers,start,end):
     log_returns = np.log(returns/returns.shift(1)) #log(P_t/P_{t-1})
     log_returns = log_returns.iloc[1:] #Remove nan line
     log_returns_anual = log_returns*252
-    mean_log_returns = 250*log_returns.mean() #get mean
-    sigma = 250*log_returns.cov().to_numpy()
+    mean_log_returns = 252*log_returns.mean() #get mean
+    sigma = log_returns.cov().to_numpy()
+    sigma =  sigma*252#((250*sigma/2)**(1/2))
     mu = mean_log_returns.to_numpy()
-    mu = mu#252*mu
+
     #sigma = (sigma/2)#2.52*((100*sigma/2)**(1/2))
     return mu,sigma
 

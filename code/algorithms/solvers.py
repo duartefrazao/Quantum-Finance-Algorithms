@@ -1,4 +1,4 @@
-from qiskit import BasicAer
+from qiskit import BasicAer,Aer
 from qiskit.aqua import aqua_globals, QuantumInstance
 from qiskit.aqua.algorithms import QAOA, NumPyMinimumEigensolver,VQE
 from qiskit.circuit.parameter import Parameter
@@ -12,7 +12,7 @@ from qiskit.finance.applications.ising import portfolio
 from qiskit.optimization.applications.ising.common import sample_most_likely
 from qiskit.finance.data_providers import RandomDataProvider
 from qiskit.aqua.algorithms import VQE, QAOA, NumPyMinimumEigensolver
-from qiskit.aqua.components.optimizers import COBYLA
+from qiskit.aqua.components.optimizers import SLSQP
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime
@@ -26,11 +26,16 @@ from qiskit.extensions import HamiltonianGate
 from qiskit.aqua.operators import (OperatorBase, Swap,X, I,Y, H, CircuitStateFn,
                                    EvolutionFactory, LegacyBaseOperator)
 aqua_globals.massive = True
+from time import time
 
 def qaoa(qubo,num_assets,num_assets_wanted, alternating):
     num_ancila_qubits = 2
+    p = 1
+    maxiter = 10
+    specify_maxiter = True
     ansatz = ((X^num_assets_wanted)^(I^(num_assets-num_assets_wanted)))#^(I^num_ancila_qubits)
     mixer_iterations = math.ceil((num_assets/2))
+
     """     print(mixer_iterations)
     mixer = QuantumCircuit(num_assets+ 1)
     theta = Parameter('θ')
@@ -69,26 +74,25 @@ def qaoa(qubo,num_assets,num_assets_wanted, alternating):
     mixer.rx(-theta,0)
     mixer.rx(-theta,1) """
     #mixer = I^num_qubits
-    quantum_instance = QuantumInstance(BasicAer.get_backend('qasm_simulator'),
+    quantum_instance = QuantumInstance(Aer.get_backend('qasm_simulator'),
                                     seed_simulator=aqua_globals.random_seed,
-                                    seed_transpiler=aqua_globals.random_seed,
-                                    shots=4096)#,basis_gates=['iswap','cx','swap','unitary','u1','u2','u3'])
+                                    seed_transpiler=aqua_globals.random_seed,shots=20000)
                                     
-    #qaoa_mes = QAOA(quantum_instance=quantum_instance, p=1, initial_state=ansatz,optimizer=COBYLA(rhobeg=(np.pi/4),maxiter=4000), num_mixer_params = mixer_iterations)
-    #qaoa_mes = QAOA(mixer=mixer,quantum_instance=quantum_instance, p=1, initial_state=ansatz,optimizer=COBYLA(rhobeg=(np.pi/4),maxiter=4000), num_mixer_params = mixer_iterations)
-    
-    p = 1
-
     if alternating:
-        qaoa_mes = QAOA(quantum_instance=quantum_instance,p=p,initial_state=ansatz,optimizer=COBYLA(rhobeg=(np.pi/4)), alternating=alternating)
+        #qaoa_mes = QAOA(quantum_instance=quantum_instance,p=p,initial_state=ansatz,optimizer=COBYLA(rhobeg=(np.pi/4)), alternating=alternating)
+        if specify_maxiter == True:
+            qaoa_mes = QAOA(quantum_instance=quantum_instance,p=p,initial_state=ansatz,optimizer=SLSQP(maxiter=maxiter),alternating=alternating)
+        else:
+            qaoa_mes = QAOA(quantum_instance=quantum_instance,p=p,initial_state=ansatz,optimizer=SLSQP(),alternating=alternating)
     else:
-        qaoa_mes = QAOA(quantum_instance=quantum_instance,p=p,optimizer=COBYLA(rhobeg=(np.pi/4)))
-    #qaoa_mes = QAOA(quantum_instance=quantum_instance)
-
-    #qaoa_mes = QAOA(quantum_instance=quantum_instance, initial_state=ansatz,p=1, optimizer=COBYLA(), num_mixer_params = mixer_iterations)
-    #qaoa_mes = QAOA(quantum_instance=quantum_instance,p=1, optimizer=COBYLA(), num_mixer_params = 1)
+        if specify_maxiter == True:
+            qaoa_mes = QAOA(quantum_instance=quantum_instance,p=p,optimizer=SLSQP(maxiter=maxiter))
+        else:
+            qaoa_mes = QAOA(quantum_instance=quantum_instance,p=p,optimizer=SLSQP())
     qaoa = MinimumEigenOptimizer(qaoa_mes)   
+    start = time()
     qaoa_result = qaoa.solve(qubo)
+    print(time()-start)
     return qaoa_result
 
 def vqe(qubo):

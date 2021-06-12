@@ -24,7 +24,7 @@ from qiskit.optimization import QuadraticProgram
 from docplex.mp.advmodel import AdvModel
 from qiskit.optimization.converters import IntegerToBinary,LinearEqualityToPenalty,InequalityToEquality,QuadraticProgramToQubo
 
-def portfolio_optimization(assets,mu,sigma,num_assets_portfolio,risk_aversion,penalty,qaoa):
+def portfolio_optimization(assets,mu,sigma,num_assets_portfolio,risk_aversion,penalty,alternating):
 
     if len(mu) != sigma.shape[0] or len(mu) != sigma.shape[1] or len(mu) != len(assets):
         raise IncompatibleArguments("Sigma, mu and assets need to be equal in size")
@@ -53,14 +53,17 @@ def portfolio_optimization(assets,mu,sigma,num_assets_portfolio,risk_aversion,pe
 
     #Objective function
     #if not  qaoa:
-    if True:
-        mdl.minimize(- expected_returns_portfolio + (risk_aversion * variance_portfolio) + penalty*((num_assets_chosen - num_assets_portfolio)**2))
+    if alternating:
+        mdl.minimize(- expected_returns_portfolio + (risk_aversion * variance_portfolio))
+        #mdl.minimize(- expected_returns_portfolio + (risk_aversion * variance_portfolio) + ancila_even*0 + ancila_odd*0 )
     else:
-        mdl.minimize(- expected_returns_portfolio + (risk_aversion * variance_portfolio) + ancila_even*0 + ancila_odd*0 )
+        mdl.minimize(- expected_returns_portfolio + (risk_aversion * variance_portfolio) + penalty*((num_assets_chosen - num_assets_portfolio)**2))
+        
+        
 
     qubo = QuadraticProgram()
     qubo.from_docplex(mdl)
-    print(qubo.export_as_lp_string())
+    #print(qubo.export_as_lp_string())
     #qubo.binary_var("ancila")
     return qubo
 

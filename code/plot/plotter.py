@@ -25,7 +25,10 @@ def graph(stocks,optimum_sol,quantum_sol,brute_force_sol):
         ax.scatter(optimum_sol["info"]["risk"],optimum_sol["info"]["returns"], label=optimum_sol['name'],marker=">",s=[120]) 
     for solution in quantum_sol:
         info = solution['info']
-        ax.scatter(info["risk"],info["returns"], label=solution["name"],marker="<",s=[120])  
+        if solution["qaoa"] :
+            ax.scatter(info["risk"],info["returns"], label=solution["name"],marker="<",s=[120])  
+        else:
+            ax.scatter(info["risk"],info["returns"], label=solution["name"],marker="^",s=[120])  
 
     ax.scatter(brute["risk"],brute["returns"], label=brute_force_sol['name'],marker="x",color="black") 
 
